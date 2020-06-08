@@ -3,15 +3,13 @@ package sample;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
-import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
-
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class NotepadController {
@@ -19,6 +17,9 @@ public class NotepadController {
     private StringBuilder sb;
     private final int distance = 4;
     private String filePath = "";
+    private List<Integer> newLines = new ArrayList<>();
+
+
 
 
 
@@ -33,6 +34,7 @@ public class NotepadController {
 
 
         for(int i = 0;i < sb.length();i++){
+
             int val = (int) sb.charAt(i);
 
             if(val - distance < 31 ){
@@ -41,18 +43,30 @@ public class NotepadController {
                 val -= distance;
             }
 
-            sb.setCharAt(i,(char)val);
+            if(newLines.contains(i)){
+                sb.setCharAt(i,'\n');
+            }else {
+                sb.setCharAt(i, (char) val);
+            }
         }
         textArea.setText(sb.toString());
+
 
     }
 
     @FXML
     void encrypt(ActionEvent event) {
-       sb = new StringBuilder(textArea.getText());
+        String test = textArea.getText().replaceAll("\n",";");
+        sb = new StringBuilder(test);
+        String[] wholeText = textArea.getText().toString().split("\n");
+
 
 
         for(int i = 0;i < sb.length();i++){
+            if(sb.charAt(i) == ';'){
+                newLines.add(i);
+            }
+
         int val = (int) sb.charAt(i);
 
         if(val + distance > 122 ){
@@ -64,6 +78,7 @@ public class NotepadController {
         sb.setCharAt(i,(char)val);
         }
         textArea.setText(sb.toString());
+
 
     }
 
@@ -158,6 +173,8 @@ public class NotepadController {
         return extension;
 
     }
+
+
 
 
 }
