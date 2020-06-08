@@ -14,35 +14,55 @@ import java.util.List;
 
 public class NotepadController {
 
+    //variables
     private StringBuilder sb;
     private final int distance = 4;
     private String filePath = "";
     private List<Integer> newLines = new ArrayList<>();
 
 
-
-
-
     @FXML
     private TextArea textArea;
 
+    @FXML
+    void encrypt(ActionEvent event) {
+        //replace all new lines to ';' so it would be easier to find new lines
+        String test = textArea.getText().replaceAll("\n",";");
+        sb = new StringBuilder(test);
 
+        for(int i = 0;i < sb.length();i++){
+            if(sb.charAt(i) == ';'){
+                newLines.add(i);
+            }
+
+            int val = (int) sb.charAt(i);
+            //change value of every char to next 4
+            if(val + distance > 122 ){
+                val = 31 + (distance - (122 - val));
+            }else {
+                val += distance;
+            }
+
+            sb.setCharAt(i,(char)val);
+        }
+        textArea.setText(sb.toString());
+    }
 
     @FXML
     void decrypt(ActionEvent event) {
          sb = new StringBuilder(textArea.getText());
 
-
         for(int i = 0;i < sb.length();i++){
 
             int val = (int) sb.charAt(i);
-
+            //change values of every char to orginal form
             if(val - distance < 31 ){
                 val = 122 - (distance + (31 - val));
             }else {
                 val -= distance;
             }
-
+            //if text contains ';' sign then set new line under that index
+            //else set
             if(newLines.contains(i)){
                 sb.setCharAt(i,'\n');
             }else {
@@ -50,36 +70,6 @@ public class NotepadController {
             }
         }
         textArea.setText(sb.toString());
-
-
-    }
-
-    @FXML
-    void encrypt(ActionEvent event) {
-        String test = textArea.getText().replaceAll("\n",";");
-        sb = new StringBuilder(test);
-        String[] wholeText = textArea.getText().toString().split("\n");
-
-
-
-        for(int i = 0;i < sb.length();i++){
-            if(sb.charAt(i) == ';'){
-                newLines.add(i);
-            }
-
-        int val = (int) sb.charAt(i);
-
-        if(val + distance > 122 ){
-            val = 31 + (distance - (122 - val));
-        }else {
-            val += distance;
-        }
-
-        sb.setCharAt(i,(char)val);
-        }
-        textArea.setText(sb.toString());
-
-
     }
 
 
@@ -87,6 +77,8 @@ public class NotepadController {
     void save(ActionEvent event) throws IOException {
         FileChooser fc = new FileChooser();
 
+        //if we don't work on previously saved file then window opens and we can choose destination of a file
+        //else we save under current path
         if (filePath.equals("")) {
             fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("Text file", "*.txt"));
             saveFile(fc);
@@ -103,7 +95,6 @@ public class NotepadController {
                 e.getMessage();
             }
         }
-
     }
 
     @FXML
@@ -113,34 +104,18 @@ public class NotepadController {
         saveFile(fc);
     }
 
-    private void saveFile(FileChooser fc) throws FileNotFoundException {
-        File file = fc.showSaveDialog(null);
-
-        try {
-            filePath = file.getPath();
-            PrintWriter writer = new PrintWriter(file);
-            writer.print(textArea.getText());
-            writer.close();
-        } catch (NullPointerException e) {
-            e.getMessage();
-        }
-    }
-
-
     @FXML
     void openFile(ActionEvent event) throws IOException {
         FileChooser fc = new FileChooser();
+        //add file extension filter
         fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("Text file","*.txt"));
         fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("Any file","*.*"));
         File selectedFile = fc.showOpenDialog(null);
         String fileContent = Files.readString(Paths.get(selectedFile.getPath()));
 
         filePath = selectedFile.getPath();
-
-
-
-
-
+        //check if file has correct extension
+        //else show worning
         if (getFileExtension(selectedFile).equals("*.txt")) {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setHeaderText("Wybrano zły typ pliku");
@@ -156,8 +131,7 @@ public class NotepadController {
         }
     }
 
-
-
+    //get extension of a file
     private static String getFileExtension(File file) {
         String extension = "";
 
@@ -169,12 +143,20 @@ public class NotepadController {
         } catch (Exception e) {
             extension = "";
         }
-
         return extension;
-
     }
 
+    //this method opens window to choose destination of a save file and saves it there
+    private void saveFile(FileChooser fc) throws FileNotFoundException {
+        File file = fc.showSaveDialog(null);
 
-
-
+        try {
+            filePath = file.getPath();
+            PrintWriter writer = new PrintWriter(file);
+            writer.print(textArea.getText());
+            writer.close();
+        } catch (NullPointerException e) {
+            e.getMessage();
+        }
+    }
 }
