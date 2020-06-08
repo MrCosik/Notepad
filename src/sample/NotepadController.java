@@ -3,7 +3,10 @@ package sample;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 
 import java.io.*;
@@ -12,8 +15,12 @@ import java.nio.file.Paths;
 
 
 public class NotepadController {
+
     private StringBuilder sb;
     private final int distance = 4;
+    private String filePath = "";
+
+
 
     @FXML
     private TextArea textArea;
@@ -64,21 +71,45 @@ public class NotepadController {
     @FXML
     void save(ActionEvent event) throws IOException {
         FileChooser fc = new FileChooser();
-        fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("Text file","*.txt"));
+
+        if (filePath.equals("")) {
+            fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("Text file", "*.txt"));
+            saveFile(fc);
+        }else {
+            File fileOld = new File(filePath);
+            fileOld.delete();
+            File fileNew = new File(filePath);
+
+            try {
+                FileWriter writer = new FileWriter(fileNew,false);
+                writer.write(textArea.getText());
+                writer.close();
+            } catch (NullPointerException e) {
+                e.getMessage();
+            }
+        }
+
+    }
+
+    @FXML
+    void saveAs(ActionEvent event) throws IOException {
+        FileChooser fc = new FileChooser();
+        fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("Text file", "*.txt"));
+        saveFile(fc);
+    }
+
+    private void saveFile(FileChooser fc) throws FileNotFoundException {
         File file = fc.showSaveDialog(null);
 
-
-
         try {
+            filePath = file.getPath();
             PrintWriter writer = new PrintWriter(file);
             writer.print(textArea.getText());
             writer.close();
         } catch (NullPointerException e) {
             e.getMessage();
         }
-
     }
-
 
 
     @FXML
@@ -88,6 +119,8 @@ public class NotepadController {
         fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("Any file","*.*"));
         File selectedFile = fc.showOpenDialog(null);
         String fileContent = Files.readString(Paths.get(selectedFile.getPath()));
+
+        filePath = selectedFile.getPath();
 
 
 
@@ -125,5 +158,6 @@ public class NotepadController {
         return extension;
 
     }
+
 
 }
